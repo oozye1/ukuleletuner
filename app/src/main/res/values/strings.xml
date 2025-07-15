@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Voice Violin Tuner</string>
-    <string name="mic_attribution_label">Tuning your violin</string>
+    <string name="app_name">Voice Bass Tuner</string>
+    <string name="mic_attribution_label">Tuning your bass guitar</string>
     <string name="native_ad_unit_id"></string>
 </resources>
