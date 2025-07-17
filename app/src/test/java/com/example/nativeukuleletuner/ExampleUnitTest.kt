@@ -1,4 +1,4 @@
-package com.example.nativeguitartuner
+package com.example.nativeukuleletuner
 
 import org.junit.Test
 

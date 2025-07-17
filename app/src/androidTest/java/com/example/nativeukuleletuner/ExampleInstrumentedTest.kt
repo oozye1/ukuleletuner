@@ -1,4 +1,4 @@
-package com.example.nativeguitartuner
+package com.example.nativeukuleletuner
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

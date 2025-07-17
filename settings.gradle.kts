@@ -14,5 +14,5 @@ dependencyResolutionManagement {
         maven { url = uri("https://jitpack.io") } // For TarsosDSP
     }
 }
-rootProject.name = "NATIVE GUITAR TUNER" // Your project name
+rootProject.name = "UKULELE TUNER" // Your project name
 include(":app")

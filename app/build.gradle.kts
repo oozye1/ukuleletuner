@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "co.uk.doverguitarteacher.voiceguitartuner" // Your package name
+    namespace = "co.uk.doverguitarteacher.voiceukuleletuner" // Your package name
     compileSdk = 35 // Or your project's compileSdk
 
     defaultConfig {
-        applicationId = "co.uk.doverguitarteacher.voiceguitartuner" // Your package name
+        applicationId = "co.uk.doverguitarteacher.voiceukuleletuner" // Your package name
         minSdk = 24 // Or your project's minSdk
         targetSdk = 35 // Or your project's targetSdk
         versionCode = 9

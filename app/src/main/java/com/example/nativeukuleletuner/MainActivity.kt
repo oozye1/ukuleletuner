@@ -1,7 +1,5 @@
-package co.uk.doverguitarteacher.voiceguitartuner
+package co.uk.doverguitarteacher.voiceukuleletuner
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Size
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
@@ -40,8 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -128,8 +127,8 @@ class MainActivity : ComponentActivity() {
     private var soundTick = 0
     private var soundsLoaded by mutableStateOf(false)
 
-    // Drawables (crash‑proof)
-    private var selectedPedal by mutableIntStateOf(R.drawable.bass1)
+    // Drawables
+    private var selectedPedal by mutableIntStateOf(R.drawable.u1)
     private var selectedVDU by mutableIntStateOf(R.drawable.dial2)
 
     // Audio
@@ -156,30 +155,48 @@ class MainActivity : ComponentActivity() {
         MobileAds.initialize(this) {}
         loadAd()
 
-        // ----- Restore skins safely -----
+        // ----- BULLETPROOF SKIN RESTORATION -----
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        selectedPedal = validateDrawable(
-            prefs.getInt(PREF_PEDAL_SKIN, R.drawable.bass1),
-            R.drawable.bass1
-        )
-        selectedVDU = validateDrawable(
-            prefs.getInt(PREF_VDU_SKIN, R.drawable.dial2),
-            R.drawable.dial2
-        )
-        // ---------------------------------
+        val defaultPedalId = R.drawable.u1
+        val defaultVduId = R.drawable.dial2
+
+        try {
+            // Try to load skins using the new, correct String-based method
+            val pedalSkinName = prefs.getString(PREF_PEDAL_SKIN, "u1") ?: "u1"
+            val vduSkinName = prefs.getString(PREF_VDU_SKIN, "dial2") ?: "dial2"
+
+            val pedalId = resources.getIdentifier(pedalSkinName, "drawable", packageName)
+            val vduId = resources.getIdentifier(vduSkinName, "drawable", packageName)
+
+            selectedPedal = if (pedalId != 0) pedalId else defaultPedalId
+            selectedVDU = if (vduId != 0) vduId else defaultVduId
+
+        } catch (e: ClassCastException) {
+            // This CATCH block runs ONLY if the old, bad Integer data is still on the device.
+            // It indicates the user did not uninstall the app first. We now fix it automatically.
+            Log.e(TAG, "Old preference file with Integers detected. Wiping prefs and resetting to defaults.", e)
+
+            // Clear the corrupted preferences file
+            prefs.edit { clear() }
+
+            // Load the default skins safely
+            selectedPedal = defaultPedalId
+            selectedVDU = defaultVduId
+        }
+        // ----------------------------------------------------
 
         pedalImages = listOf(
-            R.drawable.bass1, R.drawable.bass2, R.drawable.bass3, R.drawable.bass4,
-            R.drawable.bass5, R.drawable.bass6, R.drawable.bass7, R.drawable.bass8,
-            R.drawable.bass9, R.drawable.bass10
+            R.drawable.u1, R.drawable.u2, R.drawable.u3, R.drawable.u4,
+            R.drawable.u5, R.drawable.u6, R.drawable.u7, R.drawable.u8,
+            R.drawable.u9, R.drawable.u10
         )
         vduImages = listOf(R.drawable.dial2, R.drawable.dial3, R.drawable.dial4)
         timeSignatures = listOf("4/4", "3/4", "6/8", "2/4", "5/4")
         noteFrequencies = listOf(
-            41.20f to "E1",
-            55.00f to "A1",
-            73.42f to "D2",
-            98.00f to "G2"
+            392.00f to "G4",
+            261.63f to "C4",
+            329.63f to "E4",
+            440.00f to "A4"
         )
 
         setupSoundPool()
@@ -299,17 +316,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    //  DRAWABLE VALIDATION (crash‑proof: returns fallback if not valid)
-    // ─────────────────────────────────────────────────────────────────────────
-    private fun validateDrawable(candidate: Int, fallback: Int): Int =
-        runCatching { resources.getResourceTypeName(candidate) }
-            .getOrNull()
-            .takeIf { it == "drawable" || it == "mipmap" }
-            ?.let { candidate }
-            ?: fallback
-    // ─────────────────────────────────────────────────────────────────────────
 
     /* ================================  ADS  ================================ */
 
@@ -570,9 +576,14 @@ class MainActivity : ComponentActivity() {
         val newVdu = vduImages.random()
         selectedPedal = newPedal
         selectedVDU = newVdu
+
+        // --- Saving the stable resource NAME (e.g., "u1") as a String ---
+        val newPedalName = resources.getResourceEntryName(newPedal)
+        val newVduName = resources.getResourceEntryName(newVdu)
+
         getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE).edit {
-            putInt(PREF_PEDAL_SKIN, newPedal)
-            putInt(PREF_VDU_SKIN, newVdu)
+            putString(PREF_PEDAL_SKIN, newPedalName)
+            putString(PREF_VDU_SKIN, newVduName)
         }
     }
 
