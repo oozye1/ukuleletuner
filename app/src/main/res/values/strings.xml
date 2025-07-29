@@ -1,5 +1,5 @@
 <resources>
     <string name="app_name">Voice Ukulele Tuner</string>
     <string name="mic_attribution_label">Tuning your Ukulele</string>
-    <string name="native_ad_unit_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="native_ad_unit_id"></string>
 </resources>

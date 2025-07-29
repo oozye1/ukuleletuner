@@ -19,7 +19,7 @@
         <!-- Sample AdMob App ID -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-1281101209517101~8387249101"/>
+            android:value="ca-app-pub-1281101209517101~5890045874"/>
 
         <!-- CHANGE THE THEME ON THE ACTIVITY HERE -->
         <activity
