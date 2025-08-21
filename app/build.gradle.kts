@@ -8,13 +8,13 @@ plugins {
 
 android {
     namespace = "co.uk.doverguitarteacher.voiceukuleletuner" // Your package name
-    compileSdk = 35 // Or your project's compileSdk
+    compileSdk = 36 // Or your project's compileSdk
 
     defaultConfig {
         applicationId = "co.uk.doverguitarteacher.voiceukuleletuner" // Your package name
         minSdk = 24 // Or your project's minSdk
-        targetSdk = 35 // Or your project's targetSdk
-        versionCode = 9
+        targetSdk = 36 // Or your project's targetSdk
+        versionCode = 11
         versionName = "1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

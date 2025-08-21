@@ -15,10 +15,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
+// removed: androidx.compose.animation.AnimatedVisibility
+// removed: androidx.compose.animation.core.tween
+// removed: androidx.compose.animation.fadeIn
+// removed: androidx.compose.animation.slideInVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -41,6 +41,9 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -138,8 +141,6 @@ class MainActivity : ComponentActivity() {
         loadAd()
 
         // --- BUG FIX 1: BULLETPROOF SKIN LOADING ---
-        // This block fixes crashes caused by invalid data in SharedPreferences.
-        // It will safely recover from corrupt/old data instead of crashing the app.
         val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val defaultPedalId = R.drawable.u1
         val defaultVduId = R.drawable.dial2
@@ -192,8 +193,6 @@ class MainActivity : ComponentActivity() {
             }
 
             // --- BUG FIX 2: STABLE NEEDLE ANIMATION ---
-            // This loop is managed by the Compose lifecycle. It automatically and safely
-            // handles starting, stopping, and restarting, preventing race condition crashes.
             LaunchedEffect(Unit) {
                 while (true) {
                     delay(16)
@@ -436,7 +435,7 @@ class MainActivity : ComponentActivity() {
 
         val inTune = abs(cents) <= IN_TUNE_CENTS_THRESHOLD
         if (inTune) {
-            statusText = "$noteName (In Tune)"
+            statusText = "$noteName (In Tune)"
             statusColor = Color.Green
             if (inTuneStartTime == 0L) inTuneStartTime = System.currentTimeMillis()
             if (System.currentTimeMillis() - inTuneStartTime >= IN_TUNE_DELAY_MS && !inTuneSoundPlayed) {
@@ -446,7 +445,7 @@ class MainActivity : ComponentActivity() {
         } else {
             inTuneStartTime = 0L
             inTuneSoundPlayed = false
-            statusText = if (cents < 0) "$noteName (Tune Up)" else "$noteName (Tune Down)"
+            statusText = if (cents < 0) "$noteName (Tune Up)" else "$noteName (Tune Down)"
             statusColor = Color(0xFFFFA000)
             playFeedbackSound(if (cents < 0) soundUp else soundDown)
         }
@@ -484,8 +483,6 @@ class MainActivity : ComponentActivity() {
         noteFrequencies.minByOrNull { abs(pitch - it.first) }
 
     // --- BUG FIX: CRASH-PROOF SKIN CHANGE ---
-    // This function now safely stops the tuner before changing skins and restarts it after,
-    // preventing the race condition crash you identified.
     private fun randomizeSkins() {
         val wasRecording = isRecording
         if (wasRecording) {
@@ -507,7 +504,7 @@ class MainActivity : ComponentActivity() {
 
         if (wasRecording) {
             lifecycleScope.launch {
-                delay(100) // Brief delay to ensure UI has settled before restarting audio.
+                delay(100)
                 startTuner()
             }
         }
@@ -532,11 +529,18 @@ class MainActivity : ComponentActivity() {
                 Text(text = statusText, fontSize = 16.sp, color = statusColor, style = LocalTextStyle.current.copy(shadow = Shadow(Color.Black, blurRadius = 8f)), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.height(16.dp))
-            nativeAd?.let { ad ->
-                AnimatedVisibility(
-                    visible = isAdVisible,
-                    enter = slideInVertically(initialOffsetY = { it / 2 }, animationSpec = tween(500)) + fadeIn(animationSpec = tween(500))
-                ) { NativeAdView(ad) }
+
+            // --- FIXED AD CONTAINER (no AnimatedVisibility; prevents layout jump) ---
+            val adContainerHeight = 110.dp
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(adContainerHeight),
+                contentAlignment = Alignment.Center
+            ) {
+                if (nativeAd != null && isAdVisible) {
+                    NativeAdView(ad = nativeAd!!)
+                }
             }
         }
     }
@@ -556,7 +560,7 @@ class MainActivity : ComponentActivity() {
                 IconButton(onClick = { if (tempo > 40) tempo-- }, enabled = enabled) {
                     Icon(Icons.Default.KeyboardArrowLeft, contentDescription = null, tint = Color.White)
                 }
-                Text("$tempo BPM", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
+                Text("$tempo BPM", color = Color.White, fontWeight = FontWeight.SemiBold, fontSize = 14.sp, modifier = Modifier.width(80.dp), textAlign = TextAlign.Center)
                 IconButton(onClick = { if (tempo < 240) tempo++ }, enabled = enabled) {
                     Icon(Icons.Default.KeyboardArrowRight, contentDescription = null, tint = Color.White)
                 }
@@ -613,7 +617,7 @@ class MainActivity : ComponentActivity() {
             when (visualizerMode) {
                 VisualizerMode.BARS     -> BarsVisualizer(Modifier.fillMaxSize(), magnitudes)
                 VisualizerMode.WAVEFORM -> WaveformVisualizer(Modifier.fillMaxSize(), scrollingWaveformData)
-                VisualizerMode.NONE     -> Text("No Visualizer", color = Color.Gray, fontSize = 12.sp)
+                VisualizerMode.NONE     -> Text("No Visualizer", color = Color.Gray, fontSize = 12.sp)
             }
         }
     }
